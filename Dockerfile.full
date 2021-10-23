@@ -1,0 +1,108 @@
+FROM alpine:3.14.2
+MAINTAINER "Sukhoparov-AV <AVSukhoparov@omega.sbrf.ru>"
+LABEL "alpine"="3.14.2" "fluentd"="1.14.1" "elasticsearch.plugin"="5.1.1"
+COPY dep /tmp
+
+RUN apk add -v --allow-untrusted --repositories=/tmp/apk/repo.list --no-network --no-cache \
+        /tmp/apk/ca-certificates-20191127-r5.apk \
+        /tmp/apk/gdbm-1.19-r0.apk \
+        /tmp/apk/gmp-6.2.1-r0.apk \
+        /tmp/apk/ncurses-terminfo-base-6.2_p20210612-r0.apk \
+        /tmp/apk/ncurses-libs-6.2_p20210612-r0.apk \
+        /tmp/apk/readline-8.1.0-r0.apk \
+        /tmp/apk/yaml-0.2.5-r0.apk \
+        /tmp/apk/ruby-libs-2.7.4-r0.apk \
+        /tmp/apk/ruby-2.7.4-r0.apk \
+        /tmp/apk/ruby-io-console-2.7.4-r0.apk \
+        /tmp/apk/ruby-irb-2.7.4-r0.apk \
+        /tmp/apk/ruby-etc-2.7.4-r0.apk \
+        /tmp/apk/ruby-webrick-2.7.4-r0.apk \
+        /tmp/apk/tini-0.19.0-r0.apk \
+ && apk add -v --allow-untrusted --repositories=/tmp/apk/repo.list --no-network --virtual .build-deps \
+        /tmp/apk/libgcc-10.3.1_git20210424-r2.apk \
+        /tmp/apk/libstdc++-10.3.1_git20210424-r2.apk \
+        /tmp/apk/binutils-2.35.2-r2.apk \
+        /tmp/apk/libmagic-5.40-r1.apk \
+        /tmp/apk/file-5.40-r1.apk \
+        /tmp/apk/libgomp-10.3.1_git20210424-r2.apk \
+        /tmp/apk/libatomic-10.3.1_git20210424-r2.apk \
+        /tmp/apk/libgphobos-10.3.1_git20210424-r2.apk \
+        /tmp/apk/isl22-0.22-r0.apk \
+        /tmp/apk/mpfr4-4.1.0-r0.apk \
+        /tmp/apk/mpc1-1.2.1-r0.apk \
+        /tmp/apk/gcc-10.3.1_git20210424-r2.apk \
+        /tmp/apk/musl-1.2.2-r3.apk \
+        /tmp/apk/musl-dev-1.2.2-r3.apk \
+        /tmp/apk/libc-dev-0.7.2-r3.apk \
+        /tmp/apk/g++-10.3.1_git20210424-r2.apk \
+        /tmp/apk/make-4.3-r0.apk \
+        /tmp/apk/fortify-headers-1.1-r1.apk \
+        /tmp/apk/patch-2.7.6-r7.apk \
+        /tmp/apk/build-base-0.5-r2.apk \
+        /tmp/apk/linux-headers-5.10.41-r0.apk \
+        /tmp/apk/libgmpxx-6.2.1-r0.apk \
+        /tmp/apk/pkgconf-1.7.4-r0.apk \
+        /tmp/apk/gmp-dev-6.2.1-r0.apk \
+        /tmp/apk/libucontext-1.1-r0.apk \
+        /tmp/apk/libucontext-dev-1.1-r0.apk \
+        /tmp/apk/ruby-dev-2.7.4-r0.apk \
+        /tmp/apk/libgpg-error-1.42-r0.apk \
+        /tmp/apk/libassuan-2.5.5-r0.apk \
+        /tmp/apk/libcap-2.50-r0.apk \
+        /tmp/apk/libffi-3.3-r2.apk \
+        /tmp/apk/libintl-0.21-r0.apk \
+        /tmp/apk/libblkid-2.37-r0.apk \
+        /tmp/apk/libmount-2.37-r0.apk \
+        /tmp/apk/pcre-8.44-r0.apk \
+        /tmp/apk/glib-2.68.3-r0.apk \
+        /tmp/apk/libgcrypt-1.9.4-r0.apk \
+        /tmp/apk/libsecret-0.20.4-r1.apk \
+        /tmp/apk/pinentry-1.1.1-r0.apk \
+        /tmp/apk/libbz2-1.0.8-r1.apk \
+        /tmp/apk/nettle-3.7.3-r0.apk \
+        /tmp/apk/p11-kit-0.23.22-r0.apk \
+        /tmp/apk/libtasn1-4.17.0-r0.apk \
+        /tmp/apk/libunistring-0.9.10-r1.apk \
+        /tmp/apk/gnutls-3.7.1-r0.apk \
+        /tmp/apk/libksba-1.5.1-r0.apk \
+        /tmp/apk/libsasl-2.1.27-r12.apk \
+        /tmp/apk/libldap-2.4.58-r0.apk \
+        /tmp/apk/npth-1.6-r0.apk \
+        /tmp/apk/sqlite-libs-3.35.5-r0.apk \
+        /tmp/apk/gnupg-2.2.31-r0.apk \
+ && echo 'gem: --no-document' >> /etc/gemrc \
+ && gem install --local -V /tmp/gem/vendor/cache/bundler-2.2.29.gem \
+ && gem install --local -V /tmp/gem/vendor/cache/oj-3.13.9.gem \
+ && gem install --local -V /tmp/gem/vendor/cache/json-2.6.0.gem \
+ && gem install --local -V /tmp/gem/vendor/cache/protocol-http-0.22.5.gem \
+ && gem install --local -V /tmp/gem/vendor/cache/protocol-hpack-1.4.2.gem \
+ && gem install --local -V /tmp/gem/vendor/cache/protocol-http1-0.14.2.gem \
+ && gem install --local -V /tmp/gem/vendor/cache/protocol-http2-0.14.2.gem \
+ && gem install --local -V /tmp/gem/vendor/cache/async-http-0.56.5.gem \
+ && gem install --local -V /tmp/gem/vendor/cache/ext_monitor-0.1.2.gem \
+ && gem install --local -V /tmp/gem/vendor/cache/fluentd-1.14.1.gem \
+ && gem install --local -V /tmp/gem/vendor/cache/bigdecimal-3.0.2.gem \
+ && gem install --local -V /tmp/gem/vendor/cache/fluent-plugin-elasticsearch-5.1.1.gem \
+ && gem install --local -V /tmp/gem/vendor/cache/fluent-plugin-kafka-0.17.2.gem \
+ && gem install --local -V /tmp/gem/vendor/cache/fluent-plugin-prometheus-2.0.2.gem \
+ && gem install --local -V /tmp/gem/vendor/cache/fluent-plugin-prometheus_pushgateway-0.1.0.gem \
+ && gem install --local -V /tmp/gem/vendor/cache/fluent-plugin-record-modifier-2.1.0.gem \
+ && gem install --local -V /tmp/gem/vendor/cache/fluent-plugin-rename-key-0.4.1.gem \
+ && gem install --local -V /tmp/gem/vendor/cache/fluent-plugin-systemd-1.0.5.gem \
+ && apk del .build-deps \
+ && rm -rf /tmp/* /var/tmp/* /usr/lib/ruby/gems/*/cache/*.gem /usr/lib/ruby/gems/2.*/gems/fluentd-*/test
+ && addgroup -S fluent && adduser -S -g fluent fluent \
+ && mkdir -p /fluentd/log \
+ && mkdir -p /fluentd/etc /fluentd/plugins /etc/fluent/ \
+ && chown -R fluent /fluentd && chgrp -R fluent /fluentd \
+ && chown -R fluent /etc/fluent && chgrp -R fluent /etc/fluent
+
+
+ && gem install --local -V /tmp/gem/vendor/cache/protocol-http-0.22.5.gem \
+ && gem install --local -V /tmp/gem/vendor/cache/protocol-http1-0.14.2.gem \
+ && gem install --local -V /tmp/gem/vendor/cache/protocol-http2-0.14.2.gem \
+
+ENV FLUENTD_CONF="/etc/fluent/fluent.conf"
+EXPOSE 8080
+USER fluent
+CMD ["fluentd"]
